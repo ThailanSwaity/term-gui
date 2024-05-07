@@ -1,30 +1,58 @@
-use crossterm::{cursor, terminal, ExecutableCommand};
+use crossterm::{cursor, terminal, ExecutableCommand, QueueableCommand};
 use std::io::stdout;
 
+use std::error::Error;
 use std::process;
+use std::{thread, time};
 
-use term_gui::Window;
+use term_gui::{Alignment, Options, Window};
+
+struct Config {
+    cols: u16,
+    rows: u16,
+}
 
 fn main() {
     let (cols, rows) = terminal::size().unwrap();
-    let window = Window::new(1, 10, cols - 8, 15, "A Short Story", "Short story about a friend that got into too much trouble; he couldn't help it, so he said. However, the rest of us knew he just didn't want to. He was not willing to put in the effort to make change. He kept up his ways, slowly alienating himself from the group. Not one of his friends could stand his behaviour any longer! They couldn't stand his excessive talking.");
-    let window2 = Window::new(50, 3, 35, 5, "Nothing to see here.", "Nothing to see here.");
 
+    if let Err(e) = run(Config { cols, rows }) {
+        eprintln!("Application error: {e}");
+        process::exit(1);
+    }
+}
+
+fn run(config: Config) -> Result<(), Box<dyn Error>> {
     let mut stdout = stdout();
 
-    stdout
-        .execute(terminal::Clear(terminal::ClearType::All))
-        .unwrap();
+    let main_window = Window::new(0, 0, config.cols, config.rows, "", "");
 
-    if let Err(e) = term_gui::draw_window(&mut stdout, &window) {
-        eprintln!("Applicaiton error: {e}");
-        process::exit(1);
-    }
+    let child_window = Window::new(0, 0, 30, 15, "Child Window", "child window text");
 
-    if let Err(e) = term_gui::draw_window(&mut stdout, &window2) {
-        eprintln!("Applicaiton error: {e}");
-        process::exit(1);
-    }
+    let parent_window = Window::new(10, 5, 50, 30, "Parent Window", "");
+    let child_window_2 = Window::new(0, 0, 30, 15, "Child Window", "nice.");
 
-    stdout.execute(cursor::MoveTo(0, rows)).unwrap();
+    stdout.execute(terminal::Clear(terminal::ClearType::All))?;
+
+    main_window.draw_as_child(
+        &mut stdout,
+        &child_window,
+        Options {
+            vertical_align: Alignment::Center,
+            horizontal_align: Alignment::Center,
+        },
+    )?;
+
+    term_gui::draw_window(&mut stdout, &parent_window)?;
+    parent_window.draw_as_child(
+        &mut stdout,
+        &child_window_2,
+        Options {
+            vertical_align: Alignment::Center,
+            horizontal_align: Alignment::Center,
+        },
+    )?;
+
+    stdout.execute(cursor::MoveTo(0, config.rows))?;
+
+    Ok(())
 }

@@ -3,9 +3,20 @@ use std::io::{Stdout, Write};
 
 use std::error::Error;
 
+pub enum Alignment {
+    Min,
+    Center,
+    Max,
+}
+
+pub struct Options {
+    pub vertical_align: Alignment,
+    pub horizontal_align: Alignment,
+}
+
 pub struct Window {
-    x: u16,
-    y: u16,
+    pub x: u16,
+    pub y: u16,
     width: u16,
     height: u16,
     title: String,
@@ -23,65 +34,150 @@ impl Window {
             text_content: String::from(text_content),
         }
     }
+
+    pub fn draw_as_child(
+        &self,
+        stdout: &mut Stdout,
+        window: &Window,
+        options: Options,
+    ) -> Result<(), Box<dyn Error>> {
+        let origin_x = self.x;
+        let origin_y = self.y;
+
+        let mut relative_x = 0;
+        let mut relative_y = 0;
+        match options.vertical_align {
+            Alignment::Min => {
+                relative_y = origin_y + 1;
+            }
+            Alignment::Center => {
+                relative_y = origin_y + (self.height / 2) - (window.height / 2);
+            }
+            Alignment::Max => {
+                relative_y = origin_y + self.height - window.height - 1;
+            }
+        }
+
+        match options.horizontal_align {
+            Alignment::Min => {
+                relative_x = origin_x + 1;
+            }
+            Alignment::Center => {
+                relative_x = origin_x + (self.width / 2) - (window.width / 2);
+            }
+            Alignment::Max => {
+                relative_x = origin_x + self.width - window.width - 1;
+            }
+        }
+
+        draw_border(stdout, relative_x, relative_y, window.width, window.height)?;
+        draw_title(
+            stdout,
+            &window.title,
+            relative_x,
+            relative_y,
+            window.width,
+            window.height,
+        )?;
+        draw_content(
+            stdout,
+            &window.text_content,
+            relative_x,
+            relative_y,
+            window.width,
+            window.height,
+        )?;
+        stdout.flush()?;
+
+        Ok(())
+    }
 }
 
 pub fn draw_window(stdout: &mut Stdout, window: &Window) -> Result<(), Box<dyn Error>> {
-    draw_border(stdout, window)?;
-    draw_title(stdout, window)?;
-    draw_content(stdout, window)?;
-    Ok(())
-}
-
-fn draw_border(stdout: &mut Stdout, window: &Window) -> Result<(), Box<dyn Error>> {
-    for dy in 0..window.height {
-        for dx in 0..window.width {
-            if dy == 0 && dx == 0 {
-                stdout
-                    .queue(cursor::MoveTo(window.x + dx, window.y + dy))?
-                    .queue(style::Print('╔'))?;
-            } else if (dy == 0 || dy == window.height - 1) && (dx != 0 && dx != window.width - 1) {
-                stdout
-                    .queue(cursor::MoveTo(window.x + dx, window.y + dy))?
-                    .queue(style::Print('═'))?;
-            } else if dy == 0 && dx == window.width - 1 {
-                stdout
-                    .queue(cursor::MoveTo(window.x + dx, window.y + dy))?
-                    .queue(style::Print('╗'))?;
-            } else if (dx == 0 || dx == window.width - 1) && (dy != 0 && dy != window.height - 1) {
-                stdout
-                    .queue(cursor::MoveTo(window.x + dx, window.y + dy))?
-                    .queue(style::Print('║'))?;
-            } else if dy == window.height - 1 && dx == 0 {
-                stdout
-                    .queue(cursor::MoveTo(window.x + dx, window.y + dy))?
-                    .queue(style::Print('╚'))?;
-            } else if dy == window.height - 1 && dx == window.width - 1 {
-                stdout
-                    .queue(cursor::MoveTo(window.x + dx, window.y + dy))?
-                    .queue(style::Print('╝'))?;
-            }
-        }
-    }
+    draw_border(stdout, window.x, window.y, window.width, window.height)?;
+    draw_title(
+        stdout,
+        &window.title,
+        window.x,
+        window.y,
+        window.width,
+        window.height,
+    )?;
+    draw_content(
+        stdout,
+        &window.text_content,
+        window.x,
+        window.y,
+        window.width,
+        window.height,
+    )?;
     stdout.flush()?;
     Ok(())
 }
 
-fn draw_title(stdout: &mut Stdout, window: &Window) -> Result<(), Box<dyn Error>> {
-    stdout
-        .queue(cursor::MoveTo(window.x + 2, window.y))?
-        .queue(style::Print(format!(" {} ", &window.title)))?;
+fn draw_border(
+    stdout: &mut Stdout,
+    x: u16,
+    y: u16,
+    width: u16,
+    height: u16,
+) -> Result<(), Box<dyn Error>> {
+    for dy in 0..height {
+        for dx in 0..width {
+            if dy == 0 && dx == 0 {
+                stdout
+                    .queue(cursor::MoveTo(x + dx, y + dy))?
+                    .queue(style::Print('╔'))?;
+            } else if (dy == 0 || dy == height - 1) && (dx != 0 && dx != width - 1) {
+                stdout
+                    .queue(cursor::MoveTo(x + dx, y + dy))?
+                    .queue(style::Print('═'))?;
+            } else if dy == 0 && dx == width - 1 {
+                stdout
+                    .queue(cursor::MoveTo(x + dx, y + dy))?
+                    .queue(style::Print('╗'))?;
+            } else if (dx == 0 || dx == width - 1) && (dy != 0 && dy != height - 1) {
+                stdout
+                    .queue(cursor::MoveTo(x + dx, y + dy))?
+                    .queue(style::Print('║'))?;
+            } else if dy == height - 1 && dx == 0 {
+                stdout
+                    .queue(cursor::MoveTo(x + dx, y + dy))?
+                    .queue(style::Print('╚'))?;
+            } else if dy == height - 1 && dx == width - 1 {
+                stdout
+                    .queue(cursor::MoveTo(x + dx, y + dy))?
+                    .queue(style::Print('╝'))?;
+            }
+        }
+    }
     Ok(())
 }
 
-fn draw_content(stdout: &mut Stdout, window: &Window) -> Result<(), Box<dyn Error>> {
+fn draw_title(
+    stdout: &mut Stdout,
+    title: &str,
+    x: u16,
+    y: u16,
+    width: u16,
+    height: u16,
+) -> Result<(), Box<dyn Error>> {
+    stdout
+        .queue(cursor::MoveTo(x + 2, y))?
+        .queue(style::Print(format!(" {} ", title)))?;
+    Ok(())
+}
+
+fn draw_content(
+    stdout: &mut Stdout,
+    text_content: &str,
+    x: u16,
+    y: u16,
+    width: u16,
+    height: u16,
+) -> Result<(), Box<dyn Error>> {
     // TODO: implement alignment options
-    draw_text_with_wrap(
-        stdout,
-        &window.text_content,
-        window.x + 2,
-        window.y + 1,
-        window.width - 4,
-    )?;
+    draw_text_with_wrap(stdout, text_content, x + 2, y + 1, width - 4)?;
     Ok(())
 }
 
