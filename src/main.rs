@@ -26,31 +26,16 @@ fn run(config: Config) -> Result<(), Box<dyn Error>> {
 
     let main_window = Window::new(0, 0, config.cols, config.rows, "", "");
 
-    let child_window = Window::new(0, 0, 30, 15, "Child Window", "child window text");
-
-    let parent_window = Window::new(10, 5, 50, 30, "Parent Window", "I also have text :)");
-    let child_window_2 = Window::new(2, 2, 30, 15, "Child Window", "nice.");
+    let mut child_window = Window::new(0, 0, 60, 30, "Child Window", "Child window content.");
+    child_window.set_parent(&main_window);
+    child_window.set_options(Options {
+        vertical_align: Alignment::Center,
+        horizontal_align: Alignment::Center,
+    });
 
     stdout.execute(terminal::Clear(terminal::ClearType::All))?;
 
-    main_window.draw_as_child(
-        &mut stdout,
-        &child_window,
-        Options {
-            vertical_align: Alignment::Center,
-            horizontal_align: Alignment::Center,
-        },
-    )?;
-
-    term_gui::draw_window(&mut stdout, &parent_window)?;
-    parent_window.draw_as_child(
-        &mut stdout,
-        &child_window_2,
-        Options {
-            vertical_align: Alignment::None,
-            horizontal_align: Alignment::None,
-        },
-    )?;
+    term_gui::draw_window(&mut stdout, &child_window)?;
 
     stdout.execute(cursor::MoveTo(0, config.rows))?;
 

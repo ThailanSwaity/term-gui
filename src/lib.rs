@@ -17,16 +17,18 @@ pub struct Options {
 
 // TODO: give this an optional reference to a parent window.
 // Then use this parent reference to compute where to draw itself.
-pub struct Window {
+pub struct Window<'a> {
     pub x: u16,
     pub y: u16,
     width: u16,
     height: u16,
     title: String,
     text_content: String,
+    parent: Option<&'a Window<'a>>,
+    options: Options,
 }
 
-impl Window {
+impl<'a> Window<'a> {
     pub fn new(x: u16, y: u16, width: u16, height: u16, title: &str, text_content: &str) -> Self {
         Window {
             x,
@@ -35,29 +37,39 @@ impl Window {
             height,
             title: String::from(title),
             text_content: String::from(text_content),
+            parent: None,
+            options: Options {
+                vertical_align: Alignment::None,
+                horizontal_align: Alignment::None,
+            },
         }
     }
 
-    pub fn draw_as_child(
-        &self,
-        stdout: &mut Stdout,
-        window: &Window,
-        options: Options,
-    ) -> Result<(), Box<dyn Error>> {
-        let origin_x = self.x;
-        let origin_y = self.y;
+    pub fn set_parent(&mut self, parent: &'a Window) {
+        self.parent = Some(parent);
+    }
+
+    pub fn set_options(&mut self, options: Options) {
+        self.options = options;
+    }
+}
+
+pub fn draw_window(stdout: &mut Stdout, window: &Window) -> Result<(), Box<dyn Error>> {
+    if let Some(parent_window) = window.parent {
+        let origin_x = parent_window.x;
+        let origin_y = parent_window.y;
 
         let mut relative_x;
         let mut relative_y;
-        match options.vertical_align {
+        match window.options.vertical_align {
             Alignment::Min => {
                 relative_y = origin_y + 1;
             }
             Alignment::Center => {
-                relative_y = origin_y + (self.height / 2) - (window.height / 2);
+                relative_y = origin_y + (parent_window.height / 2) - (window.height / 2);
             }
             Alignment::Max => {
-                relative_y = origin_y + self.height - window.height - 1;
+                relative_y = origin_y + parent_window.height - window.height - 1;
             }
             Alignment::None => {
                 relative_y = origin_y + window.y + 1;
@@ -65,15 +77,15 @@ impl Window {
             } // TODO: add margins
         }
 
-        match options.horizontal_align {
+        match window.options.horizontal_align {
             Alignment::Min => {
                 relative_x = origin_x + 1;
             }
             Alignment::Center => {
-                relative_x = origin_x + (self.width / 2) - (window.width / 2);
+                relative_x = origin_x + (parent_window.width / 2) - (window.width / 2);
             }
             Alignment::Max => {
-                relative_x = origin_x + self.width - window.width - 1;
+                relative_x = origin_x + parent_window.width - window.width - 1;
             }
             Alignment::None => {
                 relative_x = origin_x + window.x + 1;
@@ -98,30 +110,27 @@ impl Window {
             window.width,
             window.height,
         )?;
-        stdout.flush()?;
-
-        Ok(())
     }
-}
+    if window.parent.is_none() {
+        draw_border(stdout, window.x, window.y, window.width, window.height)?;
+        draw_title(
+            stdout,
+            &window.title,
+            window.x,
+            window.y,
+            window.width,
+            window.height,
+        )?;
+        draw_content(
+            stdout,
+            &window.text_content,
+            window.x,
+            window.y,
+            window.width,
+            window.height,
+        )?;
+    }
 
-pub fn draw_window(stdout: &mut Stdout, window: &Window) -> Result<(), Box<dyn Error>> {
-    draw_border(stdout, window.x, window.y, window.width, window.height)?;
-    draw_title(
-        stdout,
-        &window.title,
-        window.x,
-        window.y,
-        window.width,
-        window.height,
-    )?;
-    draw_content(
-        stdout,
-        &window.text_content,
-        window.x,
-        window.y,
-        window.width,
-        window.height,
-    )?;
     stdout.flush()?;
     Ok(())
 }
