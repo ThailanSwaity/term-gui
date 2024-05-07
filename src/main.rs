@@ -28,8 +28,8 @@ fn run(config: Config) -> Result<(), Box<dyn Error>> {
 
     let child_window = Window::new(0, 0, 30, 15, "Child Window", "child window text");
 
-    let parent_window = Window::new(10, 5, 50, 30, "Parent Window", "");
-    let child_window_2 = Window::new(0, 0, 30, 15, "Child Window", "nice.");
+    let parent_window = Window::new(10, 5, 50, 30, "Parent Window", "I also have text :)");
+    let child_window_2 = Window::new(2, 2, 30, 15, "Child Window", "nice.");
 
     stdout.execute(terminal::Clear(terminal::ClearType::All))?;
 
@@ -47,8 +47,8 @@ fn run(config: Config) -> Result<(), Box<dyn Error>> {
         &mut stdout,
         &child_window_2,
         Options {
-            vertical_align: Alignment::Center,
-            horizontal_align: Alignment::Center,
+            vertical_align: Alignment::None,
+            horizontal_align: Alignment::None,
         },
     )?;
 

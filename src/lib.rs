@@ -7,6 +7,7 @@ pub enum Alignment {
     Min,
     Center,
     Max,
+    None,
 }
 
 pub struct Options {
@@ -44,8 +45,8 @@ impl Window {
         let origin_x = self.x;
         let origin_y = self.y;
 
-        let mut relative_x = 0;
-        let mut relative_y = 0;
+        let mut relative_x;
+        let mut relative_y;
         match options.vertical_align {
             Alignment::Min => {
                 relative_y = origin_y + 1;
@@ -56,6 +57,10 @@ impl Window {
             Alignment::Max => {
                 relative_y = origin_y + self.height - window.height - 1;
             }
+            Alignment::None => {
+                relative_y = origin_y + window.y + 1;
+                // TODO: restict child window to inside of parent window
+            } // TODO: add margins
         }
 
         match options.horizontal_align {
@@ -68,6 +73,10 @@ impl Window {
             Alignment::Max => {
                 relative_x = origin_x + self.width - window.width - 1;
             }
+            Alignment::None => {
+                relative_x = origin_x + window.x + 1;
+                // TODO: restict child window to inside of parent window
+            } // TODO: add margins
         }
 
         draw_border(stdout, relative_x, relative_y, window.width, window.height)?;
