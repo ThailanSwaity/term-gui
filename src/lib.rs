@@ -71,9 +71,6 @@ pub fn draw_window(stdout: &mut Stdout, window: &Window) -> Result<(), Box<dyn E
             }
             Alignment::None => {
                 absolute_y = origin_y + window.y + 1;
-                if absolute_y + window.height > origin_y + parent_window.height {
-                    absolute_y = origin_y + parent_window.height - window.height - 1;
-                }
             } // TODO: add margins
         }
 
@@ -89,9 +86,6 @@ pub fn draw_window(stdout: &mut Stdout, window: &Window) -> Result<(), Box<dyn E
             }
             Alignment::None => {
                 absolute_x = origin_x + window.x + 1;
-                if absolute_x + window.width > origin_x + parent_window.width {
-                    absolute_x = origin_x + parent_window.width - window.width - 1;
-                }
             } // TODO: add margins
         }
 
