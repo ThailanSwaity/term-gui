@@ -15,18 +15,18 @@ pub struct Options {
     pub horizontal_align: Alignment,
 }
 
-pub struct Window<'a> {
+pub struct Window {
     pub x: u16,
     pub y: u16,
     width: u16,
     height: u16,
     title: String,
     text_content: String,
-    child: Option<&'a mut Window<'a>>,
+    children: Vec<Window>,
     options: Options,
 }
 
-impl<'a> Window<'a> {
+impl Window {
     pub fn new(x: u16, y: u16, width: u16, height: u16, title: &str, text_content: &str) -> Self {
         Window {
             x,
@@ -35,7 +35,7 @@ impl<'a> Window<'a> {
             height,
             title: String::from(title),
             text_content: String::from(text_content),
-            child: None,
+            children: Vec::new(),
             options: Options {
                 vertical_align: Alignment::None,
                 horizontal_align: Alignment::None,
@@ -43,49 +43,56 @@ impl<'a> Window<'a> {
         }
     }
 
-    pub fn set_child(&mut self, child: &'a mut Window<'a>) {
-        self.child = Some(child);
+    pub fn add_child(&mut self, window: Window) {
+        self.children.push(window);
     }
 
-    pub fn set_options(&mut self, options: Options) {
-        self.options = options;
+    pub fn get_children(&self) -> &Vec<Window> {
+        &self.children
     }
 
-    pub fn draw_root(stdout: &mut Stdout, window: &Window) -> Result<(), Box<dyn Error>> {
-        window.draw(stdout, 0, 0)?;
-        Ok(())
+    pub fn get_children_as_mut(&mut self) -> &mut Vec<Window> {
+        &mut self.children
     }
+}
 
-    fn draw(
-        &self,
-        stdout: &mut Stdout,
-        origin_x: u16,
-        origin_y: u16,
-    ) -> Result<(), Box<dyn Error>> {
-        let absolute_x = origin_x + self.x;
-        let absolute_y = origin_y + self.y;
-        draw_border(stdout, absolute_x, absolute_y, self.width, self.height)?;
+pub fn draw_window_tree(stdout: &mut Stdout, window: &Window) -> Result<(), Box<dyn Error>> {
+    draw(stdout, 0, 0, window)?;
+    Ok(())
+}
+
+fn draw(
+    stdout: &mut Stdout,
+    origin_x: u16,
+    origin_y: u16,
+    window: &Window,
+) -> Result<(), Box<dyn Error>> {
+    let absolute_x = origin_x + window.x;
+    let absolute_y = origin_y + window.y;
+    draw_border(stdout, absolute_x, absolute_y, window.width, window.height)?;
+    if window.title != "" {
         draw_title(
             stdout,
-            &self.title,
+            &window.title,
             absolute_x,
             absolute_y,
-            self.width,
-            self.height,
+            window.width,
+            window.height,
         )?;
-        draw_content(
-            stdout,
-            &self.text_content,
-            absolute_x,
-            absolute_y,
-            self.width,
-            self.height,
-        )?;
-        if let Some(child_window) = self.child {
-            child_window.draw(stdout, absolute_x, absolute_y)?;
-        }
-        Ok(())
     }
+    draw_content(
+        stdout,
+        &window.text_content,
+        absolute_x,
+        absolute_y,
+        window.width,
+        window.height,
+    )?;
+
+    for child in window.get_children() {
+        draw(stdout, absolute_x + 1, absolute_y + 1, child)?;
+    }
+    Ok(())
 }
 
 fn draw_border(
