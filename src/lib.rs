@@ -15,8 +15,6 @@ pub struct Options {
     pub horizontal_align: Alignment,
 }
 
-// TODO: give this an optional reference to a parent window.
-// Then use this parent reference to compute where to draw itself.
 pub struct Window<'a> {
     pub x: u16,
     pub y: u16,
@@ -59,54 +57,58 @@ pub fn draw_window(stdout: &mut Stdout, window: &Window) -> Result<(), Box<dyn E
         let origin_x = parent_window.x;
         let origin_y = parent_window.y;
 
-        let mut relative_x;
-        let mut relative_y;
+        let mut absolute_x;
+        let mut absolute_y;
         match window.options.vertical_align {
             Alignment::Min => {
-                relative_y = origin_y + 1;
+                absolute_y = origin_y + 1;
             }
             Alignment::Center => {
-                relative_y = origin_y + (parent_window.height / 2) - (window.height / 2);
+                absolute_y = origin_y + (parent_window.height / 2) - (window.height / 2);
             }
             Alignment::Max => {
-                relative_y = origin_y + parent_window.height - window.height - 1;
+                absolute_y = origin_y + parent_window.height - window.height - 1;
             }
             Alignment::None => {
-                relative_y = origin_y + window.y + 1;
-                // TODO: restict child window to inside of parent window
+                absolute_y = origin_y + window.y + 1;
+                if absolute_y + window.height > origin_y + parent_window.height {
+                    absolute_y = origin_y + parent_window.height - window.height - 1;
+                }
             } // TODO: add margins
         }
 
         match window.options.horizontal_align {
             Alignment::Min => {
-                relative_x = origin_x + 1;
+                absolute_x = origin_x + 1;
             }
             Alignment::Center => {
-                relative_x = origin_x + (parent_window.width / 2) - (window.width / 2);
+                absolute_x = origin_x + (parent_window.width / 2) - (window.width / 2);
             }
             Alignment::Max => {
-                relative_x = origin_x + parent_window.width - window.width - 1;
+                absolute_x = origin_x + parent_window.width - window.width - 1;
             }
             Alignment::None => {
-                relative_x = origin_x + window.x + 1;
-                // TODO: restict child window to inside of parent window
+                absolute_x = origin_x + window.x + 1;
+                if absolute_x + window.width > origin_x + parent_window.width {
+                    absolute_x = origin_x + parent_window.width - window.width - 1;
+                }
             } // TODO: add margins
         }
 
-        draw_border(stdout, relative_x, relative_y, window.width, window.height)?;
+        draw_border(stdout, absolute_x, absolute_y, window.width, window.height)?;
         draw_title(
             stdout,
             &window.title,
-            relative_x,
-            relative_y,
+            absolute_x,
+            absolute_y,
             window.width,
             window.height,
         )?;
         draw_content(
             stdout,
             &window.text_content,
-            relative_x,
-            relative_y,
+            absolute_x,
+            absolute_y,
             window.width,
             window.height,
         )?;
