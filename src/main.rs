@@ -23,14 +23,24 @@ fn main() {
 fn run(config: Config) -> Result<(), Box<dyn Error>> {
     let mut stdout = stdout();
 
-    let mut root_window = Window::new(0, 0, config.cols, config.rows, "root", "root content");
-    root_window.add_child(Window::new(0, 0, 40, 20, "child 1", "child 1 content"));
+    let mut root_window = Window::new(0, 0, config.cols, config.rows - 20, "root", "root content");
+    let mut t_window = Window::new(0, 0, 40, 20, "child 1", "child 1 content");
+    t_window.set_options(Options {
+        vertical_align: Alignment::Center,
+        horizontal_align: Alignment::Center,
+    });
+    root_window.add_child(t_window);
 
     // draw windows
     stdout.execute(terminal::Clear(terminal::ClearType::All))?;
 
-    let children_ref = &mut root_window.get_children_as_mut()[0];
-    children_ref.x = 10;
+    let mut t_window = Window::new(0, 0, 20, 10, "child 2", "child 2 content");
+    t_window.set_options(Options {
+        vertical_align: Alignment::Max,
+        horizontal_align: Alignment::Max,
+    });
+
+    root_window.add_child(t_window);
 
     term_gui::draw_window_tree(&mut stdout, &root_window)?;
 

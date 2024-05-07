@@ -43,6 +43,10 @@ impl Window {
         }
     }
 
+    pub fn set_options(&mut self, options: Options) {
+        self.options = options;
+    }
+
     pub fn add_child(&mut self, window: Window) {
         self.children.push(window);
     }
@@ -57,7 +61,7 @@ impl Window {
 }
 
 pub fn draw_window_tree(stdout: &mut Stdout, window: &Window) -> Result<(), Box<dyn Error>> {
-    draw(stdout, 0, 0, window)?;
+    draw(stdout, 0, 0, window.width, window.height, window)?;
     Ok(())
 }
 
@@ -65,10 +69,39 @@ fn draw(
     stdout: &mut Stdout,
     origin_x: u16,
     origin_y: u16,
+    parent_width: u16,
+    parent_height: u16,
     window: &Window,
 ) -> Result<(), Box<dyn Error>> {
-    let absolute_x = origin_x + window.x;
-    let absolute_y = origin_y + window.y;
+    let mut absolute_x = origin_x + window.x;
+    let mut absolute_y = origin_y + window.y;
+
+    match window.options.vertical_align {
+        Alignment::Min => {
+            absolute_y = origin_y;
+        }
+        Alignment::Center => {
+            absolute_y = origin_y + (parent_height / 2) - (window.height / 2) - 1;
+        }
+        Alignment::Max => {
+            absolute_y = origin_y + parent_height - window.height - 2;
+        }
+        Alignment::None => {}
+    }
+
+    match window.options.horizontal_align {
+        Alignment::Min => {
+            absolute_x = origin_x;
+        }
+        Alignment::Center => {
+            absolute_x = origin_x + (parent_width / 2) - (window.width / 2) - 1;
+        }
+        Alignment::Max => {
+            absolute_x = origin_x + parent_width - window.width - 2;
+        }
+        Alignment::None => {}
+    }
+
     draw_border(stdout, absolute_x, absolute_y, window.width, window.height)?;
     if window.title != "" {
         draw_title(
@@ -90,7 +123,14 @@ fn draw(
     )?;
 
     for child in window.get_children() {
-        draw(stdout, absolute_x + 1, absolute_y + 1, child)?;
+        draw(
+            stdout,
+            absolute_x + 1,
+            absolute_y + 1,
+            window.width,
+            window.height,
+            child,
+        )?;
     }
     Ok(())
 }
