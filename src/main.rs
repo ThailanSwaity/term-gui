@@ -24,19 +24,18 @@ fn main() {
 fn run(config: Config) -> Result<(), Box<dyn Error>> {
     let mut stdout = stdout();
 
-    let main_window = Window::new(0, 0, config.cols, config.rows, "", "");
+    let mut main_window = Window::new(0, 0, config.cols, config.rows, "", "");
 
-    let mut moving_window1 = Window::new(0, 0, 80, 40, "Moving Window 1", "");
-    moving_window1.set_parent(&main_window);
-    moving_window1.set_options(Options {
-        vertical_align: Alignment::Center,
-        horizontal_align: Alignment::Center,
-    });
+    let mut child_window1 = Window::new(0, 0, 40, 20, "Child Window 1", "");
+    main_window.set_child(&child_window1);
+
+    let child_window2 = Window::new(0, 0, 20, 10, "Child Window 2", "");
+    child_window1.set_child(&child_window2);
 
     stdout.execute(terminal::Clear(terminal::ClearType::All))?;
 
     // draw windows
-    term_gui::draw_window(&mut stdout, &moving_window1)?;
+    Window::draw_root(&mut stdout, &main_window);
 
     stdout.execute(cursor::MoveTo(0, config.rows))?;
 
