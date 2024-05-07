@@ -1,5 +1,5 @@
 use crossterm::{cursor, style, QueueableCommand};
-use std::io::{Stdout, Write};
+use std::io::Stdout;
 
 use std::error::Error;
 
@@ -18,8 +18,8 @@ pub struct Options {
 pub struct Window {
     pub x: u16,
     pub y: u16,
-    width: u16,
-    height: u16,
+    pub width: u16,
+    pub height: u16,
     title: String,
     text_content: String,
     children: Vec<Window>,
@@ -60,8 +60,12 @@ impl Window {
     }
 }
 
-pub fn draw_window_tree(stdout: &mut Stdout, window: &Window) -> Result<(), Box<dyn Error>> {
-    draw(stdout, 0, 0, window.width, window.height, window)?;
+pub fn draw_window_tree(
+    stdout: &mut Stdout,
+    window: &Window,
+    draw_root: bool,
+) -> Result<(), Box<dyn Error>> {
+    draw(stdout, 0, 0, window.width, window.height, window, draw_root)?;
     Ok(())
 }
 
@@ -72,6 +76,7 @@ fn draw(
     parent_width: u16,
     parent_height: u16,
     window: &Window,
+    draw_window: bool,
 ) -> Result<(), Box<dyn Error>> {
     let mut absolute_x = origin_x + window.x;
     let mut absolute_y = origin_y + window.y;
@@ -102,25 +107,27 @@ fn draw(
         Alignment::None => {}
     }
 
-    draw_border(stdout, absolute_x, absolute_y, window.width, window.height)?;
-    if window.title != "" {
-        draw_title(
+    if draw_window {
+        draw_border(stdout, absolute_x, absolute_y, window.width, window.height)?;
+        if window.title != "" {
+            draw_title(
+                stdout,
+                &window.title,
+                absolute_x,
+                absolute_y,
+                window.width,
+                window.height,
+            )?;
+        }
+        draw_content(
             stdout,
-            &window.title,
+            &window.text_content,
             absolute_x,
             absolute_y,
             window.width,
             window.height,
         )?;
     }
-    draw_content(
-        stdout,
-        &window.text_content,
-        absolute_x,
-        absolute_y,
-        window.width,
-        window.height,
-    )?;
 
     for child in window.get_children() {
         draw(
@@ -130,6 +137,7 @@ fn draw(
             window.width,
             window.height,
             child,
+            true,
         )?;
     }
     Ok(())
