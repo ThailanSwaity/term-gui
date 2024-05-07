@@ -15,6 +15,8 @@ pub struct Options {
     pub horizontal_align: Alignment,
 }
 
+// TODO: give this an optional reference to a parent window.
+// Then use this parent reference to compute where to draw itself.
 pub struct Window {
     pub x: u16,
     pub y: u16,
