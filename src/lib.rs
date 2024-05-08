@@ -11,6 +11,8 @@ pub struct Options {
     pub vertical_align: Alignment,
     pub horizontal_align: Alignment,
     pub vertical_text_align: Alignment,
+    pub render_border: bool,
+    pub render_content: bool,
 }
 
 pub struct Window {
@@ -21,7 +23,7 @@ pub struct Window {
     title: String,
     text_content: String,
     children: Vec<Window>,
-    options: Options,
+    pub options: Options,
 }
 
 impl Window {
@@ -38,12 +40,10 @@ impl Window {
                 vertical_align: Alignment::None,
                 horizontal_align: Alignment::None,
                 vertical_text_align: Alignment::Min,
+                render_border: true,
+                render_content: true,
             },
         }
-    }
-
-    pub fn set_options(&mut self, options: Options) {
-        self.options = options;
     }
 
     pub fn add_child(&mut self, window: Window) {

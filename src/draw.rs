@@ -1,16 +1,13 @@
 use crate::{Alignment, Options, Window};
 
 use crossterm::{cursor, style, QueueableCommand};
-use std::io::Stdout;
+use std::io::{stdout, Stdout, Write};
 
 use std::error::Error;
 
-pub fn draw_window_tree(
-    stdout: &mut Stdout,
-    window: &Window,
-    draw_root: bool,
-) -> Result<(), Box<dyn Error>> {
-    draw(stdout, 0, 0, window.width, window.height, window, draw_root)?;
+pub fn draw_window_tree(window: &Window) -> Result<(), Box<dyn Error>> {
+    let mut stdout = stdout();
+    draw(&mut stdout, 0, 0, window.width, window.height, window)?;
     Ok(())
 }
 
@@ -21,7 +18,6 @@ fn draw(
     parent_width: u16,
     parent_height: u16,
     window: &Window,
-    draw_window: bool,
 ) -> Result<(), Box<dyn Error>> {
     let mut absolute_x = origin_x + window.x;
     let mut absolute_y = origin_y + window.y;
@@ -52,7 +48,7 @@ fn draw(
         Alignment::None => {}
     }
 
-    if draw_window {
+    if window.options.render_border {
         draw_border(stdout, absolute_x, absolute_y, window.width, window.height)?;
         if window.title != "" {
             draw_title(
@@ -64,6 +60,9 @@ fn draw(
                 window.height,
             )?;
         }
+    }
+
+    if window.options.render_content {
         draw_content(
             stdout,
             &window.text_content,
@@ -83,9 +82,9 @@ fn draw(
             window.width,
             window.height,
             child,
-            true,
         )?;
     }
+    stdout.flush()?;
     Ok(())
 }
 
@@ -167,7 +166,7 @@ fn draw_content(
     let mut absolute_y = y;
     match options.vertical_text_align {
         Alignment::Center => {
-            absolute_y = y + (height / 2) - (text_height / 2) - 2;
+            absolute_y = y + (height / 2) - (text_height / 2) - 1;
         }
         Alignment::Max => {
             absolute_y = y + height - text_height - 3;
