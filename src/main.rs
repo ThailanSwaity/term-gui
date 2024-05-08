@@ -5,7 +5,7 @@ use std::{thread, time};
 use std::error::Error;
 use std::process;
 
-use term_gui::{draw, Alignment, Options, Window};
+use term_gui::{draw::draw_window_tree, Alignment, Options, Window};
 
 struct Config {
     cols: u16,
@@ -25,12 +25,25 @@ fn run(config: Config) -> Result<(), Box<dyn Error>> {
     let mut stdout = stdout();
 
     let mut root_window = Window::new(0, 0, config.cols, config.rows, "root", "root content");
-    let mut t_window = Window::new(0, 0, 40, 20, "child 1", "child 1 content");
+    let mut t_window = Window::new(
+        0,
+        0,
+        40,
+        20,
+        "child 1",
+        "child 1 content, with wrap and alignment :)",
+    );
     t_window.set_options(Options {
         vertical_align: Alignment::Center,
         horizontal_align: Alignment::Center,
+        vertical_text_align: Alignment::Max,
     });
     let mut t2_window = Window::new(5, 5, 20, 10, "child 3", "child 3 content");
+    t2_window.set_options(Options {
+        vertical_align: Alignment::None,
+        horizontal_align: Alignment::None,
+        vertical_text_align: Alignment::Center,
+    });
     t_window.add_child(t2_window);
     root_window.add_child(t_window);
 
@@ -38,12 +51,14 @@ fn run(config: Config) -> Result<(), Box<dyn Error>> {
     t_window.set_options(Options {
         vertical_align: Alignment::Max,
         horizontal_align: Alignment::Max,
+        vertical_text_align: Alignment::Center,
     });
     root_window.add_child(t_window);
     let child_1_ref = &mut root_window.get_children_as_mut()[0];
     child_1_ref.set_options(Options {
         vertical_align: Alignment::None,
         horizontal_align: Alignment::None,
+        vertical_text_align: Alignment::Max,
     });
 
     let center_x = config.cols / 2;
@@ -70,7 +85,7 @@ fn run(config: Config) -> Result<(), Box<dyn Error>> {
 
         stdout.execute(terminal::Clear(terminal::ClearType::All))?;
 
-        draw::draw_window_tree(&mut stdout, &root_window, false)?;
+        draw_window_tree(&mut stdout, &root_window, false)?;
 
         stdout.execute(cursor::MoveTo(0, config.rows))?;
 

@@ -10,6 +10,7 @@ pub enum Alignment {
 pub struct Options {
     pub vertical_align: Alignment,
     pub horizontal_align: Alignment,
+    pub vertical_text_align: Alignment,
 }
 
 pub struct Window {
@@ -36,6 +37,7 @@ impl Window {
             options: Options {
                 vertical_align: Alignment::None,
                 horizontal_align: Alignment::None,
+                vertical_text_align: Alignment::Min,
             },
         }
     }

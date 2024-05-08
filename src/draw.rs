@@ -1,4 +1,4 @@
-use crate::{Alignment, Window};
+use crate::{Alignment, Options, Window};
 
 use crossterm::{cursor, style, QueueableCommand};
 use std::io::Stdout;
@@ -71,6 +71,7 @@ fn draw(
             absolute_y,
             window.width,
             window.height,
+            &window.options,
         )?;
     }
 
@@ -148,9 +149,33 @@ fn draw_content(
     y: u16,
     width: u16,
     height: u16,
+    options: &Options,
 ) -> Result<(), Box<dyn Error>> {
     // TODO: implement alignment options
-    draw_text_with_wrap(stdout, text_content, x + 2, y + 1, width - 4)?;
+
+    let mut dx = 0;
+    let mut dy = 0;
+    for word in text_content.split_whitespace() {
+        if dx + word.len() as u16 > width {
+            dy += 1;
+            dx = 0;
+        }
+        dx += word.len() as u16 + 1;
+    }
+    let text_height = dy;
+
+    let mut absolute_y = y;
+    match options.vertical_text_align {
+        Alignment::Center => {
+            absolute_y = y + (height / 2) - (text_height / 2) - 2;
+        }
+        Alignment::Max => {
+            absolute_y = y + height - text_height - 3;
+        }
+        _ => {}
+    }
+
+    draw_text_with_wrap(stdout, text_content, x + 2, absolute_y + 1, width - 4)?;
     Ok(())
 }
 
