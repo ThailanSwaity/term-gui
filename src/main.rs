@@ -5,7 +5,7 @@ use std::{thread, time};
 use std::error::Error;
 use std::process;
 
-use term_gui::{Alignment, Options, Window};
+use term_gui::{draw, Alignment, Options, Window};
 
 struct Config {
     cols: u16,
@@ -70,7 +70,7 @@ fn run(config: Config) -> Result<(), Box<dyn Error>> {
 
         stdout.execute(terminal::Clear(terminal::ClearType::All))?;
 
-        term_gui::draw_window_tree(&mut stdout, &root_window, false)?;
+        draw::draw_window_tree(&mut stdout, &root_window, false)?;
 
         stdout.execute(cursor::MoveTo(0, config.rows))?;
 
