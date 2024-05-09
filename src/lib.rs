@@ -46,6 +46,11 @@ impl Window {
         }
     }
 
+    pub fn fit_text(&mut self) {
+        let text_height = compute_text_height(&self.text_content, self.width - 2);
+        self.height = text_height + 3;
+    }
+
     pub fn add_child(&mut self, window: Window) {
         self.children.push(window);
     }
@@ -57,4 +62,20 @@ impl Window {
     pub fn get_children_as_mut(&mut self) -> &mut Vec<Window> {
         &mut self.children
     }
+}
+
+pub fn compute_text_height(text: &str, wrapping_width: u16) -> u16 {
+    if text.len() == 0 {
+        return 0;
+    }
+    let mut text_width = 0;
+    let mut text_height = 1;
+    for word in text.split_whitespace() {
+        if text_width + word.len() as u16 > wrapping_width {
+            text_height += 1;
+            text_width = 0;
+        }
+        text_width += word.len() as u16 + 1;
+    }
+    text_height
 }

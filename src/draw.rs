@@ -1,4 +1,4 @@
-use crate::{Alignment, Options, Window};
+use crate::{compute_text_height, Alignment, Options, Window};
 
 use crossterm::{cursor, style, QueueableCommand};
 use std::io::{stdout, Stdout, Write};
@@ -66,10 +66,10 @@ fn draw(
         draw_content(
             stdout,
             &window.text_content,
-            absolute_x,
-            absolute_y,
-            window.width,
-            window.height,
+            absolute_x + 1,
+            absolute_y + 1,
+            window.width - 2,
+            window.height - 2,
             &window.options,
         )?;
     }
@@ -152,29 +152,23 @@ fn draw_content(
 ) -> Result<(), Box<dyn Error>> {
     // TODO: implement alignment options
 
-    let mut dx = 0;
-    let mut dy = 0;
-    for word in text_content.split_whitespace() {
-        if dx + word.len() as u16 > width {
-            dy += 1;
-            dx = 0;
-        }
-        dx += word.len() as u16 + 1;
-    }
-    let text_height = dy;
+    let text_width = width - 2;
+    let text_height = compute_text_height(text_content, text_width);
 
     let mut absolute_y = y;
     match options.vertical_text_align {
         Alignment::Center => {
-            absolute_y = y + (height / 2) - (text_height / 2) - 1;
+            absolute_y = y + (height / 2) - (text_height / 2);
         }
         Alignment::Max => {
-            absolute_y = y + height - text_height - 3;
+            absolute_y = y + height - text_height;
         }
         _ => {}
     }
 
-    draw_text_with_wrap(stdout, text_content, x + 2, absolute_y + 1, width - 4)?;
+    // x + 1 here introduces a 1 character padding on the left side of the text
+    // width - 2 also introduces a 1 character padding on the right side of the text
+    draw_text_with_wrap(stdout, text_content, x + 1, absolute_y, text_width)?;
     Ok(())
 }
 
@@ -197,5 +191,6 @@ fn draw_text_with_wrap(
             .queue(style::Print(&word))?;
         dx += word.len() as u16 + 1;
     }
+    stdout.queue(style::Print(compute_text_height(text, width)))?;
     Ok(())
 }

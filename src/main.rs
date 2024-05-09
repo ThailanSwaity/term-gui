@@ -28,7 +28,7 @@ fn run(config: Config) -> Result<(), Box<dyn Error>> {
     root_window.options = Options {
         vertical_align: Alignment::None,
         horizontal_align: Alignment::None,
-        vertical_text_align: Alignment::Center,
+        vertical_text_align: Alignment::Min,
         render_border: true,
         render_content: true,
     };
@@ -47,14 +47,15 @@ fn run(config: Config) -> Result<(), Box<dyn Error>> {
         render_border: false,
         render_content: true,
     };
-    let mut t2_window = Window::new(5, 5, 20, 9, "child 3", "child 3 content");
+    let mut t2_window = Window::new(5, 5, 20, 9, "child 3", "child 3 content. testing, hopefully it continues to work no matter the size of the text...");
     t2_window.options = Options {
         vertical_align: Alignment::None,
         horizontal_align: Alignment::None,
-        vertical_text_align: Alignment::Center,
+        vertical_text_align: Alignment::None,
         render_border: true,
         render_content: true,
     };
+    t2_window.fit_text();
     t_window.add_child(t2_window);
     root_window.add_child(t_window);
 
