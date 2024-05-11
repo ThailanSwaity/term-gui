@@ -29,6 +29,7 @@ fn run(config: Config) -> Result<(), Box<dyn Error>> {
         vertical_align: Alignment::None,
         horizontal_align: Alignment::None,
         vertical_text_align: Alignment::Min,
+        horizontal_text_padding: 1,
         render_border: true,
         render_content: true,
     };
@@ -44,14 +45,23 @@ fn run(config: Config) -> Result<(), Box<dyn Error>> {
         vertical_align: Alignment::Center,
         horizontal_align: Alignment::Center,
         vertical_text_align: Alignment::Max,
+        horizontal_text_padding: 1,
         render_border: false,
         render_content: true,
     };
-    let mut t2_window = Window::new(5, 5, 20, 9, "child 3", "child 3 content. testing, hopefully it continues to work no matter the size of the text...");
+    let mut t2_window = Window::new(
+        5,
+        5,
+        20,
+        9,
+        "child 3",
+        "Why did it stop moving in the center?",
+    );
     t2_window.options = Options {
         vertical_align: Alignment::None,
         horizontal_align: Alignment::None,
         vertical_text_align: Alignment::None,
+        horizontal_text_padding: 1,
         render_border: true,
         render_content: true,
     };
@@ -64,6 +74,7 @@ fn run(config: Config) -> Result<(), Box<dyn Error>> {
         vertical_align: Alignment::Max,
         horizontal_align: Alignment::Max,
         vertical_text_align: Alignment::Center,
+        horizontal_text_padding: 1,
         render_border: true,
         render_content: true,
     };
@@ -74,10 +85,10 @@ fn run(config: Config) -> Result<(), Box<dyn Error>> {
         vertical_align: Alignment::None,
         horizontal_align: Alignment::Max,
         vertical_text_align: Alignment::Center,
+        horizontal_text_padding: 1,
         render_border: false,
         render_content: true,
     };
-
     root_window.add_child(t_window);
 
     let child_1_ref = &mut root_window.get_children_as_mut()[0];
@@ -85,6 +96,7 @@ fn run(config: Config) -> Result<(), Box<dyn Error>> {
         vertical_align: Alignment::None,
         horizontal_align: Alignment::None,
         vertical_text_align: Alignment::Max,
+        horizontal_text_padding: 1,
         render_border: true,
         render_content: true,
     };

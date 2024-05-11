@@ -150,9 +150,7 @@ fn draw_content(
     height: u16,
     options: &Options,
 ) -> Result<(), Box<dyn Error>> {
-    // TODO: implement alignment options
-
-    let text_width = width - 2;
+    let text_width = width - 2 * options.horizontal_text_padding;
     let text_height = compute_text_height(text_content, text_width);
 
     let mut absolute_y = y;
@@ -166,9 +164,13 @@ fn draw_content(
         _ => {}
     }
 
-    // x + 1 here introduces a 1 character padding on the left side of the text
-    // width - 2 also introduces a 1 character padding on the right side of the text
-    draw_text_with_wrap(stdout, text_content, x + 1, absolute_y, text_width)?;
+    draw_text_with_wrap(
+        stdout,
+        text_content,
+        x + options.horizontal_text_padding,
+        absolute_y,
+        text_width,
+    )?;
     Ok(())
 }
 
@@ -191,6 +193,6 @@ fn draw_text_with_wrap(
             .queue(style::Print(&word))?;
         dx += word.len() as u16 + 1;
     }
-    stdout.queue(style::Print(compute_text_height(text, width)))?;
+    //    stdout.queue(style::Print(compute_text_height(text, width)))?;
     Ok(())
 }
