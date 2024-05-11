@@ -1,5 +1,6 @@
 pub mod draw;
 
+// TODO: Implement Alignment offsets, like Center(i16) for easier window positioning
 pub enum Alignment {
     Min,
     Center,
@@ -46,6 +47,10 @@ impl Window {
                 render_content: true,
             },
         }
+    }
+
+    pub fn set_text_content(&mut self, text: &str) {
+        self.text_content = String::from(text);
     }
 
     /// Causes the window to shrink to the size of the text (plus whatever horizontal padding)
