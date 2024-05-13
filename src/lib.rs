@@ -2,9 +2,9 @@ pub mod draw;
 
 // TODO: Implement Alignment offsets, like Center(i16) for easier window positioning
 pub enum Alignment {
-    Min,
-    Center,
-    Max,
+    Min(i16),
+    Center(i16),
+    Max(i16),
     None,
 }
 
@@ -41,7 +41,7 @@ impl Window {
             options: Options {
                 vertical_align: Alignment::None,
                 horizontal_align: Alignment::None,
-                vertical_text_align: Alignment::Min,
+                vertical_text_align: Alignment::Min(0),
                 horizontal_text_padding: 1,
                 render_border: true,
                 render_content: true,

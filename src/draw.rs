@@ -23,27 +23,47 @@ fn draw(
     let mut absolute_y = origin_y + window.y;
 
     match window.options.vertical_align {
-        Alignment::Min => {
-            absolute_y = origin_y;
+        Alignment::Min(offset) => {
+            if offset >= 0 {
+                absolute_y = origin_y + offset as u16;
+            }
         }
-        Alignment::Center => {
-            absolute_y = origin_y + (parent_height / 2) - (window.height / 2) - 1;
+        Alignment::Center(offset) => {
+            let spot_y =
+                origin_y as i16 + (parent_height / 2) as i16 - (window.height / 2) as i16 - 1
+                    + offset;
+            if spot_y >= 0 {
+                absolute_y = spot_y as u16;
+            }
         }
-        Alignment::Max => {
-            absolute_y = origin_y + parent_height - window.height - 2;
+        Alignment::Max(offset) => {
+            let spot_y = origin_y as i16 + parent_height as i16 - window.height as i16 - 2 + offset;
+            if offset <= 0 && spot_y >= 0 {
+                absolute_y = spot_y as u16;
+            }
         }
         Alignment::None => {}
     }
 
     match window.options.horizontal_align {
-        Alignment::Min => {
-            absolute_x = origin_x;
+        Alignment::Min(offset) => {
+            if offset >= 0 {
+                absolute_x = origin_x + offset as u16;
+            }
         }
-        Alignment::Center => {
-            absolute_x = origin_x + (parent_width / 2) - (window.width / 2) - 1;
+        Alignment::Center(offset) => {
+            let spot_x =
+                origin_x as i16 + (parent_width / 2) as i16 - (window.width / 2) as i16 - 1
+                    + offset;
+            if spot_x >= 0 {
+                absolute_x = spot_x as u16;
+            }
         }
-        Alignment::Max => {
-            absolute_x = origin_x + parent_width - window.width - 2;
+        Alignment::Max(offset) => {
+            let spot_x = origin_x as i16 + parent_width as i16 - window.width as i16 - 2 + offset;
+            if offset <= 0 && spot_x >= 0 {
+                absolute_x = spot_x as u16;
+            }
         }
         Alignment::None => {}
     }
@@ -155,13 +175,24 @@ fn draw_content(
 
     let mut absolute_y = y;
     match options.vertical_text_align {
-        Alignment::Center => {
-            absolute_y = y + (height / 2) - (text_height / 2);
+        Alignment::Center(offset) => {
+            let spot_y = y as i16 + (height / 2) as i16 - (text_height / 2) as i16 + offset;
+            if spot_y >= 0 {
+                absolute_y = spot_y as u16;
+            }
         }
-        Alignment::Max => {
-            absolute_y = y + height - text_height;
+        Alignment::Max(offset) => {
+            let spot_y = y as i16 + height as i16 - text_height as i16 + offset;
+            if offset <= 0 && spot_y >= 0 {
+                absolute_y = spot_y as u16;
+            }
         }
-        _ => {}
+        Alignment::Min(offset) => {
+            if offset >= 0 {
+                absolute_y = y + offset as u16;
+            }
+        }
+        Alignment::None => {}
     }
 
     draw_text_with_wrap(

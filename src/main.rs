@@ -28,7 +28,7 @@ fn run(config: Config) -> Result<(), Box<dyn Error>> {
     root_window.options = Options {
         vertical_align: Alignment::None,
         horizontal_align: Alignment::None,
-        vertical_text_align: Alignment::Min,
+        vertical_text_align: Alignment::Min(1),
         horizontal_text_padding: 1,
         render_border: true,
         render_content: true,
@@ -42,9 +42,9 @@ fn run(config: Config) -> Result<(), Box<dyn Error>> {
         "child 1 content, with wrap and alignment :)",
     );
     t_window.options = Options {
-        vertical_align: Alignment::Center,
-        horizontal_align: Alignment::Center,
-        vertical_text_align: Alignment::Max,
+        vertical_align: Alignment::Center(0),
+        horizontal_align: Alignment::Center(0),
+        vertical_text_align: Alignment::Max(0),
         horizontal_text_padding: 1,
         render_border: false,
         render_content: true,
@@ -71,9 +71,9 @@ fn run(config: Config) -> Result<(), Box<dyn Error>> {
 
     let mut t_window = Window::new(0, 0, 20, 9, "child 2", "child 2 content");
     t_window.options = Options {
-        vertical_align: Alignment::Max,
-        horizontal_align: Alignment::Max,
-        vertical_text_align: Alignment::Center,
+        vertical_align: Alignment::Max(-1),
+        horizontal_align: Alignment::Center(0),
+        vertical_text_align: Alignment::Center(0),
         horizontal_text_padding: 1,
         render_border: true,
         render_content: true,
@@ -83,8 +83,8 @@ fn run(config: Config) -> Result<(), Box<dyn Error>> {
     let mut t_window = Window::new(0, 15, 35, 5, "child 4", "moving text without a border");
     t_window.options = Options {
         vertical_align: Alignment::None,
-        horizontal_align: Alignment::Max,
-        vertical_text_align: Alignment::Center,
+        horizontal_align: Alignment::Max(0),
+        vertical_text_align: Alignment::Center(0),
         horizontal_text_padding: 1,
         render_border: false,
         render_content: true,
@@ -95,7 +95,7 @@ fn run(config: Config) -> Result<(), Box<dyn Error>> {
     child_1_ref.options = Options {
         vertical_align: Alignment::None,
         horizontal_align: Alignment::None,
-        vertical_text_align: Alignment::Max,
+        vertical_text_align: Alignment::Max(0),
         horizontal_text_padding: 1,
         render_border: true,
         render_content: true,
